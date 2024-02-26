@@ -1,89 +1,89 @@
-import {Await} from '@remix-run/react';
+import { Await } from '@remix-run/react'
 import {
+  type CartQueryDataReturn,
   CartForm,
-  type CartQueryData,
   type SeoHandleFunction,
-} from '@shopify/hydrogen';
-import {ActionFunctionArgs, json} from '@shopify/remix-oxygen';
-import clsx from 'clsx';
-import {Suspense} from 'react';
-import invariant from 'tiny-invariant';
+} from '@shopify/hydrogen'
+import { ActionFunctionArgs, json } from '@shopify/remix-oxygen'
+import clsx from 'clsx'
+import { Suspense } from 'react'
+import invariant from 'tiny-invariant'
 
-import {CartActions, CartLineItems, CartSummary} from '~/components/cart/Cart';
-import SpinnerIcon from '~/components/icons/Spinner';
-import {isLocalPath} from '~/lib/utils';
-import {useRootLoaderData} from '~/root';
+import { CartActions, CartLineItems, CartSummary } from '~/components/cart/Cart'
+import SpinnerIcon from '~/components/icons/Spinner'
+import { isLocalPath } from '~/lib/utils'
+import { useRootLoaderData } from '~/root'
 
 const seo: SeoHandleFunction = () => ({
   title: 'Cart',
   noIndex: true,
-});
+})
 
 export const handle = {
   seo,
-};
+}
 
-export async function action({request, context}: ActionFunctionArgs) {
-  const {session, cart} = context;
+export async function action({ request, context }: ActionFunctionArgs) {
+  const { session, cart } = context
 
   const [formData, customerAccessToken] = await Promise.all([
     request.formData(),
     session.get('customerAccessToken'),
-  ]);
+  ])
 
-  const {action, inputs} = CartForm.getFormInput(formData);
-  invariant(action, 'No cartAction defined');
+  const { action, inputs } = CartForm.getFormInput(formData)
+  invariant(action, 'No cartAction defined')
 
-  let status = 200;
-  let result: CartQueryData;
+  let status = 200
+  let result: CartQueryDataReturn
 
   switch (action) {
     case CartForm.ACTIONS.LinesAdd:
-      result = await cart.addLines(inputs.lines);
-      break;
+      result = await cart.addLines(inputs.lines)
+      break
     case CartForm.ACTIONS.LinesUpdate:
-      result = await cart.updateLines(inputs.lines);
-      break;
+      result = await cart.updateLines(inputs.lines)
+      break
     case CartForm.ACTIONS.LinesRemove:
-      result = await cart.removeLines(inputs.lineIds);
-      break;
+      result = await cart.removeLines(inputs.lineIds)
+      break
     case CartForm.ACTIONS.DiscountCodesUpdate: {
-      const formDiscountCode = inputs.discountCode;
+      const formDiscountCode = inputs.discountCode
 
       // User inputted discount code
       const discountCodes = (
         formDiscountCode ? [formDiscountCode] : []
-      ) as string[];
+      ) as string[]
 
       // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
+      discountCodes.push(...inputs.discountCodes)
 
-      result = await cart.updateDiscountCodes(discountCodes);
-      break;
+      result = await cart.updateDiscountCodes(discountCodes)
+      break
     }
     case CartForm.ACTIONS.BuyerIdentityUpdate:
       result = await cart.updateBuyerIdentity({
         ...inputs.buyerIdentity,
         customerAccessToken,
-      });
-      break;
+      })
+      break
     default:
-      invariant(false, `${action} cart action is not defined`);
+      invariant(false, `${action} cart action is not defined`)
   }
 
   /**
    * The Cart ID may change after each mutation. We need to update it each time in the session.
    */
-  const cartId = result.cart.id;
-  const headers = cart.setCartId(result.cart.id);
+  const cartId = result.cart.id
+  const headers = cart.setCartId(result.cart.id)
 
-  const redirectTo = formData.get('redirectTo') ?? null;
+  const redirectTo = formData.get('redirectTo') ?? null
   if (typeof redirectTo === 'string' && isLocalPath(request, redirectTo)) {
-    status = 303;
-    headers.set('Location', redirectTo);
+    status = 303
+    headers.set('Location', redirectTo)
   }
 
-  const {cart: cartResult, errors} = result;
+  const { cart: cartResult, errors } = result
   return json(
     {
       cart: cartResult,
@@ -92,12 +92,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         cartId,
       },
     },
-    {status, headers},
-  );
+    { status, headers },
+  )
 }
 
 export default function Cart() {
-  const rootData = useRootLoaderData();
+  const rootData = useRootLoaderData()
 
   return (
     <section
@@ -132,5 +132,5 @@ export default function Cart() {
         </Await>
       </Suspense>
     </section>
-  );
+  )
 }
