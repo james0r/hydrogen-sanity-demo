@@ -1,40 +1,42 @@
-import {Await, useLoaderData} from '@remix-run/react';
+import { Await, useLoaderData } from '@remix-run/react'
 import {
   flattenConnection,
   getSelectedProductOptions,
   type SeoConfig,
   type SeoHandleFunction,
   ShopifyAnalyticsProduct,
-} from '@shopify/hydrogen';
+  type ShopifyPageViewPayload,
+} from '@shopify/hydrogen'
 import type {
   MediaConnection,
   MediaImage,
   Product,
   ProductVariant,
-} from '@shopify/hydrogen/storefront-api-types';
-import {AnalyticsPageType} from '@shopify/hydrogen-react';
-import {defer, type LoaderFunctionArgs, redirect} from '@shopify/remix-oxygen';
-import clsx from 'clsx';
-import {Suspense} from 'react';
-import invariant from 'tiny-invariant';
+} from '@shopify/hydrogen/storefront-api-types'
+import { AnalyticsPageType } from '@shopify/hydrogen-react'
+import { defer, type LoaderFunctionArgs, redirect } from '@shopify/remix-oxygen'
+import clsx from 'clsx'
+import { Suspense } from 'react'
+import invariant from 'tiny-invariant'
 
-import PortableText from '~/components/portableText/PortableText';
-import ProductDetails from '~/components/product/Details';
-import RelatedProducts from '~/components/product/RelatedProducts';
-import type {SanityProductPage} from '~/lib/sanity';
-import {ColorTheme} from '~/lib/theme';
-import {fetchGids, notFound, validateLocale} from '~/lib/utils';
-import {PRODUCT_PAGE_QUERY} from '~/queries/sanity/product';
+import PortableText from '~/components/portableText/PortableText'
+import ProductDetails from '~/components/product/Details'
+import RelatedProducts from '~/components/product/RelatedProducts'
+import type { SanityProductPage } from '~/lib/sanity'
+import { ColorTheme } from '~/lib/theme'
+import { fetchGids, notFound, validateLocale } from '~/lib/utils'
+import { PRODUCT_PAGE_QUERY } from '~/queries/sanity/product'
 import {
   PRODUCT_QUERY,
   RECOMMENDED_PRODUCTS_QUERY,
   VARIANTS_QUERY,
-} from '~/queries/shopify/product';
+} from '~/queries/shopify/product'
+import { ProductWithNodes } from '~/types/shopify'
 
-const seo: SeoHandleFunction = ({data}) => {
+const seo: SeoHandleFunction<typeof loader> = ({ data }) => {
   const media = flattenConnection<MediaConnection>(data.product?.media).find(
     (media) => media.mediaContentType === 'IMAGE',
-  ) as MediaImage | undefined;
+  ) as MediaImage | undefined
 
   return {
     title:
@@ -52,28 +54,28 @@ const seo: SeoHandleFunction = ({data}) => {
       brand: data?.product?.vendor,
       name: data?.product?.title,
     },
-  } satisfies SeoConfig<Product>;
-};
+  } satisfies SeoConfig<Product>
+}
 
 export const handle = {
   seo,
-};
+}
 
-export async function loader({params, context, request}: LoaderFunctionArgs) {
-  validateLocale({context, params});
+export async function loader({ params, context, request }: LoaderFunctionArgs) {
+  validateLocale({ context, params })
 
-  const {handle} = params;
-  invariant(handle, 'Missing handle param, check route filename');
+  const { handle } = params
+  invariant(handle, 'Missing handle param, check route filename')
 
-  const selectedOptions = getSelectedProductOptions(request);
+  const selectedOptions = getSelectedProductOptions(request)
 
   const cache = context.storefront.CacheCustom({
     mode: 'public',
     maxAge: 60,
     staleWhileRevalidate: 60,
-  });
+  })
 
-  const [page, {product}] = await Promise.all([
+  const [page, { product }] = await Promise.all([
     context.sanity.query<SanityProductPage>({
       query: PRODUCT_PAGE_QUERY,
       params: {
@@ -82,25 +84,25 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
       cache,
     }),
     context.storefront.query<{
-      product: Product & {selectedVariant?: ProductVariant};
+      product: Product & { selectedVariant?: ProductVariant }
     }>(PRODUCT_QUERY, {
       variables: {
         handle,
         selectedOptions,
       },
     }),
-  ]);
+  ])
 
   if (!page || !product?.id) {
-    throw notFound();
+    throw notFound()
   }
 
   if (!product.selectedVariant) {
-    return redirectToFirstVariant({product, request});
+    return redirectToFirstVariant({ product, request })
   }
 
   // Resolve any references to products on the Storefront API
-  const gids = fetchGids({page, context});
+  const gids = fetchGids({ page, context })
 
   // In order to show which variants are available in the UI, we need to query
   // all of them. We defer this query so that it doesn't block the page.
@@ -108,19 +110,17 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     variables: {
       handle,
     },
-  });
+  })
 
   // Get recommended products from Shopify
-  const recommended = context.storefront.query<{
-    product: Product & {selectedVariant?: ProductVariant};
-  }>(RECOMMENDED_PRODUCTS_QUERY, {
+  const recommended = context.storefront.query(RECOMMENDED_PRODUCTS_QUERY, {
     variables: {
       productId: product.id,
     },
-  });
+  })
 
-  const firstVariant = product.variants.nodes[0];
-  const selectedVariant = product.selectedVariant ?? firstVariant;
+  const firstVariant = product.variants.nodes[0]
+  const selectedVariant = product.selectedVariant ?? firstVariant
 
   const productAnalytics: ShopifyAnalyticsProduct = {
     productGid: product.id,
@@ -129,7 +129,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     variantName: selectedVariant.title,
     brand: product.vendor,
     price: selectedVariant.price.amount,
-  };
+  }
 
   return defer({
     page,
@@ -144,26 +144,26 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
       products: [productAnalytics],
       totalValue: parseFloat(selectedVariant.price.amount),
     },
-  });
+  })
 }
 
 function redirectToFirstVariant({
   product,
   request,
 }: {
-  product: Product;
-  request: Request;
+  product: Product
+  request: Request
 }) {
-  const searchParams = new URLSearchParams(new URL(request.url).search);
-  const firstVariant = product!.variants.nodes[0];
+  const searchParams = new URLSearchParams(new URL(request.url).search)
+  const firstVariant = product!.variants.nodes[0]
   for (const option of firstVariant.selectedOptions) {
-    searchParams.set(option.name, option.value);
+    searchParams.set(option.name, option.value)
   }
 
   throw redirect(
     `/products/${product!.handle}?${searchParams.toString()}`,
     302,
-  );
+  )
 }
 
 export default function ProductHandle() {
@@ -175,7 +175,7 @@ export default function ProductHandle() {
     analytics,
     recommended,
     gids,
-  } = useLoaderData();
+  } = useLoaderData<typeof loader>()
   return (
     <ColorTheme value={page.colorTheme}>
       <div className="relative w-full">
@@ -186,7 +186,7 @@ export default function ProductHandle() {
               sanityProduct={page}
               storefrontProduct={product}
               storefrontVariants={[]}
-              analytics={analytics}
+              analytics={analytics as ShopifyPageViewPayload}
             />
           }
         >
@@ -200,7 +200,7 @@ export default function ProductHandle() {
                 sanityProduct={page}
                 storefrontProduct={product}
                 storefrontVariants={resp.product?.variants.nodes || []}
-                analytics={analytics}
+                analytics={analytics as ShopifyPageViewPayload}
               />
             )}
           </Await>
@@ -242,5 +242,5 @@ export default function ProductHandle() {
         </Await>
       </Suspense>
     </ColorTheme>
-  );
+  )
 }

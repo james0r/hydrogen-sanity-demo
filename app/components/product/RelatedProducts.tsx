@@ -12,6 +12,8 @@ export default function RelatedProducts({relatedProducts}: Props) {
   const colorTheme = useColorTheme();
   const products = relatedProducts && relatedProducts?.slice(0, 4);
 
+  console.log('relatedProducts', relatedProducts);
+
   return (
     <div
       className={clsx(

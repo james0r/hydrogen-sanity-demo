@@ -1,22 +1,22 @@
 // Virtual entry point for the app
-import * as remixBuild from '@remix-run/dev/server-build';
+import * as remixBuild from '@remix-run/dev/server-build'
 import {
   cartGetIdDefault,
   cartSetIdDefault,
   createCartHandler,
   createStorefrontClient,
   storefrontRedirect,
-} from '@shopify/hydrogen';
+} from '@shopify/hydrogen'
 import {
   createCookieSessionStorage,
   createRequestHandler,
   getStorefrontHeaders,
   type Session,
   type SessionStorage,
-} from '@shopify/remix-oxygen';
-import {createSanityClient} from 'hydrogen-sanity';
+} from '@shopify/remix-oxygen'
+import { createSanityClient } from 'hydrogen-sanity'
 
-import {getLocaleFromRequest} from '~/lib/utils';
+import { getLocaleFromRequest } from '~/lib/utils'
 
 /**
  * Export a fetch handler in module format.
@@ -32,11 +32,11 @@ export default {
        * Open a cache instance in the worker and a custom session instance.
        */
       if (!env?.SESSION_SECRET) {
-        throw new Error('SESSION_SECRET environment variable is not set');
+        throw new Error('SESSION_SECRET environment variable is not set')
       }
 
-      const waitUntil = (p: Promise<any>) => executionContext.waitUntil(p);
-      const secrets = [env.SESSION_SECRET];
+      const waitUntil = (p: Promise<any>) => executionContext.waitUntil(p)
+      const secrets = [env.SESSION_SECRET]
 
       let [cache, session, previewSession] = await Promise.all([
         caches?.open('hydrogen'),
@@ -49,30 +49,30 @@ export default {
               sameSite: true,
               secrets,
             },
-          });
+          })
 
           const session = await storage.getSession(
             request.headers.get('Cookie'),
-          );
+          )
 
-          return new HydrogenSession(storage, session);
+          return new HydrogenSession(storage, session)
         })(),
-      ]);
+      ])
 
       /**
        * Create Hydrogen's Storefront client.
        */
-      const {storefront} = createStorefrontClient({
+      const { storefront } = createStorefrontClient({
         cache,
         waitUntil,
         i18n: getLocaleFromRequest(request),
         publicStorefrontToken: env.PUBLIC_STOREFRONT_API_TOKEN,
         privateStorefrontToken: env.PRIVATE_STOREFRONT_API_TOKEN,
         storeDomain: `https://${env.PUBLIC_STORE_DOMAIN}`,
-        storefrontApiVersion: env.PUBLIC_STOREFRONT_API_VERSION || '2023-10',
+        storefrontApiVersion: env.PUBLIC_STOREFRONT_API_VERSION || '2024-1',
         storefrontId: env.PUBLIC_STOREFRONT_ID,
         storefrontHeaders: getStorefrontHeaders(request),
-      });
+      })
 
       const sanity = createSanityClient({
         cache,
@@ -81,9 +81,9 @@ export default {
         preview:
           env.SANITY_PREVIEW_SECRET && env.SANITY_API_TOKEN
             ? {
-                session: previewSession,
-                token: env.SANITY_API_TOKEN,
-              }
+              session: previewSession,
+              token: env.SANITY_API_TOKEN,
+            }
             : undefined,
         // Pass configuration options for Sanity client
         config: {
@@ -93,14 +93,14 @@ export default {
           useCdn: process.env.NODE_ENV === 'production',
           perspective: 'published',
         },
-      });
+      })
 
       // Create a cart api instance.
       const cart = createCartHandler({
         storefront,
         getCartId: cartGetIdDefault(request.headers),
         setCartId: cartSetIdDefault(),
-      });
+      })
 
       /**
        * Create a Remix request handler and pass
@@ -117,9 +117,9 @@ export default {
           env,
           sanity,
         }),
-      });
+      })
 
-      const response = await handleRequest(request);
+      const response = await handleRequest(request)
 
       if (response.status === 404) {
         /**
@@ -127,17 +127,17 @@ export default {
          * If the redirect doesn't exist, then `storefrontRedirect`
          * will pass through the 404 response.
          */
-        return storefrontRedirect({request, response, storefront});
+        return storefrontRedirect({ request, response, storefront })
       }
 
-      return response;
+      return response
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(error);
-      return new Response('An unexpected error occurred', {status: 500});
+      console.error(error)
+      return new Response('An unexpected error occurred', { status: 500 })
     }
   },
-};
+}
 
 /**
  * This is a custom session implementation for your Hydrogen shop.
@@ -148,7 +148,7 @@ class HydrogenSession {
   constructor(
     private sessionStorage: SessionStorage,
     private session: Session,
-  ) {}
+  ) { }
 
   static async init(request: Request, secrets: string[]) {
     const storage = createCookieSessionStorage({
@@ -159,38 +159,38 @@ class HydrogenSession {
         sameSite: 'lax',
         secrets,
       },
-    });
+    })
 
-    const session = await storage.getSession(request.headers.get('Cookie'));
+    const session = await storage.getSession(request.headers.get('Cookie'))
 
-    return new this(storage, session);
+    return new this(storage, session)
   }
 
   get(key: string) {
-    return this.session.get(key);
+    return this.session.get(key)
   }
 
   has(key: string) {
-    return this.session.has(key);
+    return this.session.has(key)
   }
 
   destroy() {
-    return this.sessionStorage.destroySession(this.session);
+    return this.sessionStorage.destroySession(this.session)
   }
 
   flash(key: string, value: any) {
-    this.session.flash(key, value);
+    this.session.flash(key, value)
   }
 
   unset(key: string) {
-    this.session.unset(key);
+    this.session.unset(key)
   }
 
   set(key: string, value: any) {
-    this.session.set(key, value);
+    this.session.set(key, value)
   }
 
   commit() {
-    return this.sessionStorage.commitSession(this.session);
+    return this.sessionStorage.commitSession(this.session)
   }
 }
