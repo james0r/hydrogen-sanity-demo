@@ -1,9 +1,9 @@
 import {
   PRODUCT_FIELDS,
   PRODUCT_VARIANT_FIELDS,
-} from '~/queries/shopify/product';
+} from '~/queries/shopify/product'
 
-export const COLLECTION_FIELDS = `
+export const COLLECTION_FIELDS = `#graphql
   fragment CollectionFields on Collection {
     id
     title
@@ -24,25 +24,22 @@ export const COLLECTION_FIELDS = `
       }
     }
   }
-`;
+` as const
 
 export const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_FIELDS}
-  ${PRODUCT_VARIANT_FIELDS}
-  ${COLLECTION_FIELDS}
-
   query CollectionDetails($country: CountryCode, $language: LanguageCode, $handle: String!, $count: Int!, $cursor: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean)
     @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       ...CollectionFields
     }
   }
-`;
 
-export const COLLECTION_QUERY_ID = `#graphql
   ${PRODUCT_FIELDS}
   ${PRODUCT_VARIANT_FIELDS}
   ${COLLECTION_FIELDS}
+` as const
+
+export const COLLECTION_QUERY_ID = `#graphql
 
   query CollectionDetails($country: CountryCode, $language: LanguageCode, $id: ID!, $count: Int!, $cursor: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean)
     @inContext(country: $country, language: $language) {
@@ -50,4 +47,7 @@ export const COLLECTION_QUERY_ID = `#graphql
       ...CollectionFields
     }
   }
-`;
+  ${PRODUCT_FIELDS}
+  ${PRODUCT_VARIANT_FIELDS}
+  ${COLLECTION_FIELDS}
+` as const

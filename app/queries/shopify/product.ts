@@ -1,4 +1,4 @@
-export const PRODUCT_VARIANT_FIELDS = `
+export const PRODUCT_VARIANT_FIELDS = `#graphql
   fragment ProductVariantFields on ProductVariant {
     availableForSale
     compareAtPrice {
@@ -32,9 +32,9 @@ export const PRODUCT_VARIANT_FIELDS = `
       handle
     }
   }
-`;
+`as const
 
-export const PRODUCT_FIELDS = `
+export const PRODUCT_FIELDS = `#graphql
   fragment ProductFields on Product {
     handle
     id
@@ -45,12 +45,9 @@ export const PRODUCT_FIELDS = `
     title
     vendor
   }
-`;
+`as const
 
 export const PRODUCT_QUERY = `#graphql
-  ${PRODUCT_FIELDS}
-  ${PRODUCT_VARIANT_FIELDS}
-
   query product($country: CountryCode, $language: LanguageCode, $handle: String!, $selectedOptions: [SelectedOptionInput!]!)
   @inContext(country: $country, language: $language) {
     product(handle: $handle) {
@@ -88,12 +85,11 @@ export const PRODUCT_QUERY = `#graphql
       }
     }
   }
-`;
-
-export const PRODUCTS_AND_VARIANTS = `#graphql
   ${PRODUCT_FIELDS}
   ${PRODUCT_VARIANT_FIELDS}
+`as const
 
+export const PRODUCTS_AND_VARIANTS = `#graphql
   query products(
     $country: CountryCode
     $language: LanguageCode
@@ -111,12 +107,11 @@ export const PRODUCTS_AND_VARIANTS = `#graphql
       }
     }
   }
-`;
-
-export const PRODUCT_AND_VARIANT = `#graphql
   ${PRODUCT_FIELDS}
   ${PRODUCT_VARIANT_FIELDS}
+`as const
 
+export const PRODUCT_AND_VARIANT = `#graphql
   query product(
     $country: CountryCode
     $language: LanguageCode
@@ -132,12 +127,11 @@ export const PRODUCT_AND_VARIANT = `#graphql
       }
     }
   }
-`;
-
-export const PRODUCTS_AND_COLLECTIONS = `#graphql
   ${PRODUCT_FIELDS}
   ${PRODUCT_VARIANT_FIELDS}
+`as const
 
+export const PRODUCTS_AND_COLLECTIONS = `#graphql
   query productsAndCollections(
     $country: CountryCode
     $language: LanguageCode
@@ -160,11 +154,11 @@ export const PRODUCTS_AND_COLLECTIONS = `#graphql
       }
     }
   }
-`;
+  ${PRODUCT_FIELDS}
+  ${PRODUCT_VARIANT_FIELDS}
+`as const
 
 export const VARIANTS_QUERY = `#graphql
-  ${PRODUCT_VARIANT_FIELDS}
-
   query variants(
     $country: CountryCode
     $language: LanguageCode
@@ -178,12 +172,10 @@ export const VARIANTS_QUERY = `#graphql
       }
     }
   }
-`;
+  ${PRODUCT_VARIANT_FIELDS}
+`as const
 
 export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  ${PRODUCT_FIELDS}
-  ${PRODUCT_VARIANT_FIELDS}
-
   query productRecommendations(
     $country: CountryCode
     $language: LanguageCode
@@ -198,4 +190,6 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
       }
     }
   }
-`;
+  ${PRODUCT_FIELDS}
+  ${PRODUCT_VARIANT_FIELDS}
+`as const
