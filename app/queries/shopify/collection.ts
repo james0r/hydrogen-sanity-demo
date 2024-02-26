@@ -41,7 +41,7 @@ export const COLLECTION_QUERY = `#graphql
 
 export const COLLECTION_QUERY_ID = `#graphql
 
-  query CollectionDetails($country: CountryCode, $language: LanguageCode, $id: ID!, $count: Int!, $cursor: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean)
+  query CollectionDetailsId($country: CountryCode, $language: LanguageCode, $id: ID!, $count: Int!, $cursor: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean)
     @inContext(country: $country, language: $language) {
     collection(id: $id) {
       ...CollectionFields

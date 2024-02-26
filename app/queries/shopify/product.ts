@@ -90,7 +90,7 @@ export const PRODUCT_QUERY = `#graphql
 `as const
 
 export const PRODUCTS_AND_VARIANTS = `#graphql
-  query products(
+  query productsAndVariants(
     $country: CountryCode
     $language: LanguageCode
     $ids: [ID!]!
@@ -112,7 +112,7 @@ export const PRODUCTS_AND_VARIANTS = `#graphql
 `as const
 
 export const PRODUCT_AND_VARIANT = `#graphql
-  query product(
+  query productAndVariant(
     $country: CountryCode
     $language: LanguageCode
     $id: ID!
