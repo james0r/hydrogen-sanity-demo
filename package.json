@@ -13,7 +13,7 @@
     "lint": "eslint --no-error-on-unmatched-pattern --ext .js,.ts,.jsx,.tsx .",
     "format": "npx prettier --write . --ignore-path .gitignore",
     "typecheck": "tsc --noEmit",
-    "g": "shopify hydrogen generate"
+    "codegen": "shopify hydrogen generate"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {

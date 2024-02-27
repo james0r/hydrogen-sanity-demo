@@ -31,7 +31,6 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
   VARIANTS_QUERY,
 } from '~/queries/shopify/product'
-import { ProductWithNodes } from '~/types/shopify'
 
 const seo: SeoHandleFunction<typeof loader> = ({ data }) => {
   const media = flattenConnection<MediaConnection>(data.product?.media).find(
@@ -199,7 +198,7 @@ export default function ProductHandle() {
                 selectedVariant={selectedVariant}
                 sanityProduct={page}
                 storefrontProduct={product}
-                storefrontVariants={resp.product?.variants.nodes || []}
+                storefrontVariants={(resp.product?.variants.nodes || []) as ProductVariant[]}
                 analytics={analytics as ShopifyPageViewPayload}
               />
             )}
@@ -236,7 +235,7 @@ export default function ProductHandle() {
         >
           {(products) => (
             <RelatedProducts
-              relatedProducts={products.productRecommendations}
+              relatedProducts={(products.productRecommendations || []) as Product[]}
             />
           )}
         </Await>

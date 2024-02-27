@@ -1,18 +1,16 @@
-import clsx from 'clsx';
+import clsx from 'clsx'
 
-import ProductCard from '~/components/product/Card';
-import {useColorTheme} from '~/lib/theme';
-import type {ProductWithNodes} from '~/types/shopify';
+import ProductCard from '~/components/product/Card'
+import { useColorTheme } from '~/lib/theme'
+import type { ProductWithNodes } from '~/types/shopify'
 
 type Props = {
-  relatedProducts: ProductWithNodes[];
-};
+  relatedProducts: ProductWithNodes[]
+}
 
-export default function RelatedProducts({relatedProducts}: Props) {
-  const colorTheme = useColorTheme();
-  const products = relatedProducts && relatedProducts?.slice(0, 4);
-
-  console.log('relatedProducts', relatedProducts);
+export default function RelatedProducts({ relatedProducts }: Props) {
+  const colorTheme = useColorTheme()
+  const products = relatedProducts && relatedProducts?.slice(0, 4)
 
   return (
     <div
@@ -20,7 +18,7 @@ export default function RelatedProducts({relatedProducts}: Props) {
         'rounded-t-xl px-4 py-8', //
         'md:px-8',
       )}
-      style={{background: colorTheme?.background || 'white'}}
+      style={{ background: colorTheme?.background || 'white' }}
     >
       <h3
         className={clsx(
@@ -41,5 +39,5 @@ export default function RelatedProducts({relatedProducts}: Props) {
         ))}
       </div>
     </div>
-  );
+  )
 }
