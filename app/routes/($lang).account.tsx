@@ -98,9 +98,8 @@ export default function Authenticated() {
 
   // routes that export handle { renderInModal: true }
   const renderOutletInModal = matches.some((match) => {
-    return match?.handle?.renderInModal
+    return (match?.handle as { renderInModal?: boolean })?.renderInModal
   })
-  // => Property 'renderInModal' does not exist on type '{}'.ts(2339)
 
   // Public routes
   if (!data.isAuthenticated) {
@@ -111,10 +110,10 @@ export default function Authenticated() {
   if (outlet) {
     if (renderOutletInModal) {
       const modalSeo = matches.map((match) => {
-        if (typeof match.handle?.seo === 'function') {
-          return match.handle.seo(match)
+        if (typeof (match.handle as { seo?: string })?.seo === 'function') {
+          return (match.handle as { seo: Function }).seo(match)
         }
-        return match?.handle?.seo || ''
+        return (match?.handle as { seo: string })?.seo || ''
       })
 
       const modalTitle = modalSeo.length
