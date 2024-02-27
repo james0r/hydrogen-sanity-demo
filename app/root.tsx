@@ -151,7 +151,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <PreviewProvider previewConfig={preview} fallback={<PreviewLoading />}>
+        <PreviewProvider {...preview} fallback={<PreviewLoading />}>
           <Layout key={`${locale.language}-${locale.country}`}>
             <Outlet />
           </Layout>

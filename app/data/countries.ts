@@ -1,4 +1,4 @@
-import {Localizations} from '~/types/shopify';
+import { Localizations } from '~/types/shopify'
 
 export const countries: Localizations = {
   default: {
@@ -25,4 +25,4 @@ export const countries: Localizations = {
     label: 'Norway (NOK kr)',
     currency: 'NOK',
   },
-};
+}
