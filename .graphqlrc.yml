@@ -1,2 +1,2 @@
 schema: node_modules/@shopify/hydrogen-react/storefront.schema.json
-documents: './**/*.{graphql,js,ts,jsx,tsx}'
+documents: ['./app/routes/*.{graphql,js,ts,jsx,tsx}']
